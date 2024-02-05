@@ -11,31 +11,31 @@
 
 namespace Zwijn\Monolog\Formatter;
 
+use Monolog\LogRecord;
+
 /**
  * Encode records in a json format compatible with Logdna
  * @author Nicolas Vanheuverzwijn
  */
-class LogdnaFormatter extends \Monolog\Formatter\JsonFormatter {
+class LogdnaFormatter extends \Monolog\Formatter\JsonFormatter
+{
 
-    public function __construct($batchMode = self::BATCH_MODE_NEWLINES, $appendNewline = false) {
-        parent::__construct($batchMode, $appendNewline);
-    }
+  public function __construct($batchMode = self::BATCH_MODE_NEWLINES, $appendNewline = false)
+  {
+    parent::__construct($batchMode, $appendNewline);
+  }
 
-    public function format(array $record) {
-        $date = new \DateTime();
+  public function format(LogRecord $record): string
+  {
+    $date = new \DateTimeImmutable();
 
-        $json = [
-            'lines' => [
-                [
-                    'timestamp' => $date->getTimestamp(),
-                    'line' => $record['message'],
-                    'app' => $record['channel'],
-                    'level' => $record['level_name'],
-                    'meta' => $record['context']
-                ]
-            ]
-        ];
-
-        return parent::format($json);
-    }
+    return parent::format(new LogRecord(
+      $date,
+      $record->channel,
+      $record->level,
+      $record->message,
+      $record->context,
+      $record->extra,
+    ));
+  }
 }

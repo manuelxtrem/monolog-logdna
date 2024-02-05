@@ -2,41 +2,50 @@
 
 namespace Zwijn\Monolog\Formatter;
 
-class LogdnaFormatterTest extends \PHPUnit_Framework_TestCase {
+use Monolog\DateTimeImmutable;
+use Monolog\Level;
+use Monolog\LogRecord;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
-    /**
-     * @var \Zwijn\Monolog\Formatter\LogdnaFormatter
-     */
-    private $logdnaFormatter = null;
+class LogdnaFormatterTest extends TestCase
+{
 
-    protected function setUp() {
-        parent::setUp();
-        $this->logdnaFormatter = new \Zwijn\Monolog\Formatter\LogdnaFormatter();
-    }
+  /**
+   * @var \Zwijn\Monolog\Formatter\LogdnaFormatter
+   */
+  private $logdnaFormatter = null;
 
-    public function testFormatAccordingToLogdnaStandard() {
-        $record = $this->getRecord();
-        $json = $this->logdnaFormatter->format($record);
-        $decoded_json = \json_decode($json, true);
+  protected function setUp(): void
+  {
+    parent::setUp();
+    $this->logdnaFormatter = new \Zwijn\Monolog\Formatter\LogdnaFormatter();
+  }
 
-        $this->assertArrayHasKey('lines', $decoded_json);
-        $this->assertEquals($decoded_json['lines'][0]['line'], $record['message']);
-        $this->assertEquals($decoded_json['lines'][0]['app'], $record['channel']);
-        $this->assertEquals($decoded_json['lines'][0]['level'], $record['level_name']);
-        $this->assertEquals($decoded_json['lines'][0]['meta'], $record['context']);
+  public function testFormatAccordingToLogdnaStandard()
+  {
+    $record = $this->getRecord();
+    $json = $this->logdnaFormatter->format($record);
+    $decoded_json = \json_decode($json, true);
 
-    }
+    $this->assertArrayHasKey('message', $decoded_json);
+    $this->assertEquals($decoded_json['message'], $record['message']);
+    $this->assertEquals($decoded_json['channel'], $record['channel']);
+    $this->assertEquals($decoded_json['level'], $record['level']);
+    $this->assertEquals($decoded_json['level_name'], $record['level_name']);
+    $this->assertEquals($decoded_json['context'], $record['context']);
+    $this->assertEquals($decoded_json['datetime'], $record['datetime']);
+  }
 
-    private function getRecord(){
-        return [
-            'message' => 'some message',
-            'context' => [],
-            'level' => 100,
-            'level_name' => 'DEBUG',
-            'channel' => 'name',
-            'datetime' => 182635582,
-            'extra' => array(),
-        ];
-    }
-
+  private function getRecord(): LogRecord
+  {
+    return new LogRecord(
+      new DateTimeImmutable(false),
+      'DEBUG',
+      Level::fromName('DEBUG'),
+      'some message',
+      [],
+      [],
+    );
+  }
 }
